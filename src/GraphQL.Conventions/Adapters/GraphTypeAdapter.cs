@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using DynamicExpresso;
+using GraphQL.Conventions.Abstractions;
+using GraphQL.Conventions.Extensions;
 using GraphQL.Conventions.Types.Descriptors;
 using GraphQL.Conventions.Types.Resolution.Extensions;
 using GraphQL.Resolvers;
+using GraphQL.Subscription;
 using GraphQL.Types;
 
 namespace GraphQL.Conventions.Adapters
@@ -79,6 +84,99 @@ namespace GraphQL.Conventions.Adapters
 
         private FieldType DeriveField(GraphFieldInfo fieldInfo)
         {
+            if (fieldInfo.Type.TypeRepresentation.IsSubclassOfRawGeneric(typeof(IObservable<>)))
+            {
+                //var wrappedType = fieldInfo.Type.TypeRepresentation.GenericTypeArguments[0];
+                //var argParam = Expression.Parameter(typeof(ResolveFieldContext), "context");
+                //Expression expression = Expression.Property(argParam, nameof(ResolveFieldContext.Source));
+                //expression = Expression.Convert(expression, wrappedType);
+                ////var lambdaCreator = typeof(Expression).GetMethods().First(x=>x.Name == nameof(Expression.Lambda) && x.GetGenericArguments()``= typeof(MemberExpression)).MakeGenericMethod(typeof(ResolveFieldContext),wrappedType);
+                ////var lambda = lambdaCreator.Invoke(null,new object[]{ propertyExpression });
+                //var @delegate = Expression.Lambda(expression, argParam).Compile();
+
+                //var resolver = typeof(FuncFieldResolver<>).MakeGenericType(wrappedType).GetConstructors().First()
+                //    ?.Invoke(new object[]
+                //    {
+                //        @delegate
+                //    });
+                ////{new Func<ResolveFieldContext,object>(x=>x.Source)});
+                ////var resolver = new FuncFieldResolver<object>(x=>x.Source);
+
+                //var subscriber = fieldInfo.DeclaringType.TypeRepresentation.DeclaredMethods.First(x => x.Name.Equals(fieldInfo.Name, StringComparison.OrdinalIgnoreCase));
+                //return new EventStreamFieldType
+                //{
+                //    Name = "messageAdded",
+                //    Type = wrappedType,
+                //    Resolver = resolver as IFieldResolver,
+                //    Subscriber = typeof(EventStreamResolver<>).MakeGenericType(wrappedType).GetConstructors().First()
+                //};
+                var wrappedType = fieldInfo.Type.TypeRepresentation.GenericTypeArguments[0];
+                //LambdaExpression exp;
+                //{
+                //    var argParam = Expression.Parameter(typeof(ResolveFieldContext), "context");
+                //    var thisExp = Expression.Constant(Activator.CreateInstance(fieldInfo.DeclaringType.TypeRepresentation), fieldInfo.DeclaringType.TypeRepresentation);
+                //    //Expression<Func<SubscriptionBase, ResolveFieldContext>> myExpr = (@this) => @this.ResolveFieldContext;
+                //    var accessContextExp =
+                //        Expression.Property(thisExp, fieldInfo.DeclaringType.TypeRepresentation.GetProperty(nameof(SubscriptionBase.ResolveFieldContext)));
+                //    var assignExp = Expression.Assign(accessContextExp, argParam);
+                //    var getSourceExp = Expression.Property(argParam, nameof(ResolveFieldContext.Source));
+                //    var castSourceExp = Expression.Convert(getSourceExp, wrappedType);
+                //    //var labelExp = Expression.Label(wrappedType,"return");
+                //    //var returnExp = Expression.Return(labelExp, castSourceExp);
+                //    var blockExp = Expression.Block(assignExp, castSourceExp);
+                //    exp = Expression.Lambda(blockExp, argParam);
+                //}
+                //var resolver = typeof(ExpressionFieldResolver<,>).MakeGenericType(typeof(ResolveFieldContext), wrappedType).GetConstructors().First()
+                //    .Invoke(new object[]
+                //    {
+                //        exp
+                //    }) as IFieldResolver;
+
+                //{
+                //    var argParam = Expression.Parameter(typeof(ResolveEventStreamContext), "context");
+                //    var thisExp = Expression.Constant(Activator.CreateInstance(fieldInfo.DeclaringType.TypeRepresentation), fieldInfo.DeclaringType.TypeRepresentation);
+                //    //Expression<Func<SubscriptionBase, ResolveFieldContext>> myExpr = (@this) => @this.ResolveFieldContext;
+                //    var accessContextExp =
+                //        Expression.Property(thisExp, fieldInfo.DeclaringType.TypeRepresentation.GetProperty(nameof(SubscriptionBase.ResolveEventStreamContext)));
+                //    var assignExp = Expression.Assign(accessContextExp, argParam);
+                //    var method = fieldInfo.DeclaringType.TypeRepresentation.DeclaredMethods.First(x =>
+                //        x.Name.Equals(fieldInfo.Name, StringComparison.OrdinalIgnoreCase));
+                //    method
+                //    Expression<Func<ResolveEventStreamContext,object>> getSourceExp = context => context.GetArgument(,)
+                //    var getSourceExp = Expression.Property(argParam, nameof(ResolveEventStreamContext.GetArgument));
+                //    var castSourceExp = Expression.Convert(getSourceExp, wrappedType);
+                //    //var labelExp = Expression.Label(wrappedType,"return");
+                //    //var returnExp = Expression.Return(labelExp, castSourceExp);
+                //    var blockExp = Expression.Block(assignExp, castSourceExp);
+                //    exp = Expression.Lambda(blockExp, argParam);
+                //}
+
+                //var subscriber = typeof(EventStreamResolver<>).MakeGenericType(wrappedType).GetConstructors().First()
+                //    .Invoke(new object[]
+                //    {
+
+                //    }) as IEventStreamResolver;
+                var method = fieldInfo.DeclaringType.TypeRepresentation.DeclaredMethods.First(x =>
+                        x.Name.Equals(fieldInfo.Name, StringComparison.OrdinalIgnoreCase))
+                    .CreateDelegate(typeof(Func<,>).MakeGenericType(typeof(ResolveEventStreamContext), fieldInfo.Type.TypeRepresentation),fieldInfo.DeclaringType.Value);
+                var argParam = Expression.Parameter(typeof(ResolveFieldContext), "context");
+                Expression expression = Expression.Property(argParam, nameof(ResolveFieldContext.Source));
+                expression = Expression.Convert(expression, wrappedType);
+                var @delegate = Expression.Lambda(expression, argParam).Compile();
+
+                var resolver = typeof(FuncFieldResolver<>).MakeGenericType(wrappedType).GetConstructors().First()
+                    ?.Invoke(new object[]
+                    {
+                        @delegate
+                    });
+                return new EventStreamFieldType
+                {
+                    Name = fieldInfo.Name,
+                    Type = this._typeDescriptors.GetEntity(wrappedType).GetType(),
+                    Resolver = resolver as IFieldResolver,
+                    Subscriber = typeof(EventStreamResolver<>).MakeGenericType(wrappedType).GetConstructors().First().Invoke(new object[] { method }) as IEventStreamResolver
+                };
+            }
             return new FieldType
             {
                 Name = fieldInfo.Name,
@@ -186,8 +284,15 @@ namespace GraphQL.Conventions.Adapters
 
         private TType CreateTypeInstance<TType>(Type type)
         {
-            var obj = Activator.CreateInstance(type);
-            return obj is TType ? (TType)obj : default(TType);
+            try
+            {
+                var obj = Activator.CreateInstance(type);
+                return obj is TType ? (TType)obj : default(TType);
+            }
+            catch (Exception e)
+            {
+                return default;
+            }
         }
 
         private IGraphType WrapNonNullableType(GraphTypeInfo typeInfo, IGraphType graphType) =>

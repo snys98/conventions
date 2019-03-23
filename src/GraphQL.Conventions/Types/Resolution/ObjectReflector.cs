@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using GraphQL.Conventions.Extensions;
 using GraphQL.Conventions.Handlers;
 using GraphQL.Conventions.Types.Descriptors;
 using GraphQL.Conventions.Types.Resolution.Extensions;
+using GraphQL.Subscription;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
@@ -246,6 +248,7 @@ namespace GraphQL.Conventions.Types.Resolution
         {
             foreach (var argument in methodInfo?
                 .GetParameters()
+                .Where(x=>!x.IsContextParam())
                 .Skip(methodInfo.IsExtensionMethod() ? 1 : 0)
                 .Select(DeriveArgument)
                 ?? new GraphArgumentInfo[0])

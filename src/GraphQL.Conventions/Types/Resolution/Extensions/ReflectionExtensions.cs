@@ -84,11 +84,18 @@ namespace GraphQL.Conventions.Types.Resolution.Extensions
             {
                 typeInfo = typeInfo.TypeParameter();
             }
+
+            if (typeInfo.IsGenericType(typeof(IObservable<>)))
+            {
+                typeInfo = typeInfo.TypeParameter();
+            }
+
             if (typeInfo.IsGenericType(typeof(Nullable<>)) ||
                 typeInfo.IsGenericType(typeof(NonNull<>)))
             {
                 typeInfo = typeInfo.TypeParameter();
             }
+            
             return typeInfo;
         }
 

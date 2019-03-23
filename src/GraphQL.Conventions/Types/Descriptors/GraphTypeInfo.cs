@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using GraphQL.Conventions.Types.Resolution;
 using GraphQL.Conventions.Types.Resolution.Extensions;
+using GraphQL.Subscription;
+using GraphQL.Types;
 
 namespace GraphQL.Conventions.Types.Descriptors
 {
@@ -92,9 +94,19 @@ namespace GraphQL.Conventions.Types.Descriptors
         {
             var type = TypeRepresentation;
 
+            if (type == typeof(ResolveEventStreamContext) || type == typeof(ResolveFieldContext))
+            {
+                return;
+            }
+
             if (type.IsGenericType(typeof(Task<>)))
             {
                 IsTask = true;
+                type = type.TypeParameter();
+            }
+
+            if (type.IsGenericType(typeof(IObservable<>)))
+            {
                 type = type.TypeParameter();
             }
 
@@ -134,7 +146,7 @@ namespace GraphQL.Conventions.Types.Descriptors
             IsInputType = IsPrimitive || type.IsValueType || (typeRegistration?.IsScalar ?? false);
             IsInterfaceType = !IsListType && type.IsInterface;
             IsEnumerationType = type.IsEnum;
-            Name = typeRegistration?.Name;
+            Name = typeRegistration?.Name ?? type.Name;
         }
     }
 }
