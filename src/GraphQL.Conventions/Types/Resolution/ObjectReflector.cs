@@ -7,6 +7,7 @@ using GraphQL.Conventions.Handlers;
 using GraphQL.Conventions.Types.Descriptors;
 using GraphQL.Conventions.Types.Resolution.Extensions;
 using GraphQL.Subscription;
+using GraphQL.Types;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
@@ -104,6 +105,7 @@ namespace GraphQL.Conventions.Types.Resolution
 
             var isInjectedType =
                 type.TypeRepresentation.AsType() == typeof(IResolutionContext) ||
+                type.TypeRepresentation.IsSubclassOf(typeof(ResolveFieldContext)) ||
                 type.TypeRepresentation.AsType() == typeof(IUserContext);
 
             if (!type.IsEnumerationType &&

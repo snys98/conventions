@@ -61,7 +61,7 @@ namespace GraphQL.Conventions
                 return;
             }
 
-            if (typeInfo.IsGenericType(typeof(Task<>)))
+            if (typeInfo.IsGenericType(typeof(Task<>))|| typeInfo.IsGenericType(typeof(IObservable<>)))
             {
                 typeInfo = typeInfo.TypeParameter();
             }
