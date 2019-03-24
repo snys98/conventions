@@ -87,7 +87,7 @@ namespace GraphQL.Conventions.Adapters
             if (fieldInfo.Type.TypeRepresentation.IsSubclassOfRawGeneric(typeof(IObservable<>)))
             {
                 var wrappedType = fieldInfo.Type.TypeRepresentation.GenericTypeArguments[0];
-                
+
                 var argParam = Expression.Parameter(typeof(ResolveFieldContext), "context");
                 Expression expression = Expression.Property(argParam, nameof(ResolveFieldContext.Source));
                 expression = Expression.Convert(expression, wrappedType);
@@ -105,7 +105,7 @@ namespace GraphQL.Conventions.Adapters
                 {
                     throw new ArgumentException("Subscription must only have one param of type ResolveEventStreamContext");
                 }
-                var @delegate1 = method.CreateDelegate(typeof(Func<,>).MakeGenericType(typeof(ResolveEventStreamContext), fieldInfo.Type.TypeRepresentation), fieldInfo.DeclaringType.Value);
+                var @delegate1 = method.CreateDelegate(typeof(Func<,>).MakeGenericType(typeof(ResolveEventStreamContext), fieldInfo.Type.TypeRepresentation), null);
                 var subscriber = typeof(EventStreamResolver<>).MakeGenericType(wrappedType).GetConstructors().First()
                     .Invoke(new object[] { @delegate1 });
                 return new EventStreamFieldType
@@ -223,15 +223,8 @@ namespace GraphQL.Conventions.Adapters
 
         private TType CreateTypeInstance<TType>(Type type)
         {
-            try
-            {
-                var obj = Activator.CreateInstance(type);
-                return obj is TType ? (TType)obj : default(TType);
-            }
-            catch (Exception e)
-            {
-                return default;
-            }
+            var obj = Activator.CreateInstance(type);
+            return obj is TType ? (TType)obj : default(TType);
         }
 
         private IGraphType WrapNonNullableType(GraphTypeInfo typeInfo, IGraphType graphType) =>
