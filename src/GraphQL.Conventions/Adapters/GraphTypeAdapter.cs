@@ -10,14 +10,23 @@ using GraphQL.Conventions.Types.Resolution.Extensions;
 using GraphQL.Resolvers;
 using GraphQL.Subscription;
 using GraphQL.Types;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphQL.Conventions.Adapters
 {
     public class GraphTypeAdapter : IGraphTypeAdapter<ISchema, IGraphType>
     {
-        readonly CachedRegistry<Type, IGraphType> _typeDescriptors = new CachedRegistry<Type, IGraphType>();
+        public IServiceProvider ServiceProvider { get; }
+        readonly CachedRegistry<Type, IGraphType> _typeDescriptors;
 
         readonly Dictionary<string, Type> _registeredScalarTypes = new Dictionary<string, Type>();
+
+        public GraphTypeAdapter(IServiceProvider serviceProvider)
+        {
+            ServiceProvider = serviceProvider;
+            _typeDescriptors = new CachedRegistry<Type, IGraphType>(serviceProvider);
+        }
+
 
         public Func<GraphFieldInfo, IFieldResolver> FieldResolverFactory { get; set; } = (fieldInfo) => new FieldResolver(fieldInfo);
 
@@ -216,7 +225,9 @@ namespace GraphQL.Conventions.Adapters
 
         private IGraphType CacheType(GraphTypeInfo typeInfo, IGraphType graphType)
         {
+            //string:StringGraphType
             _typeDescriptors.AddEntity(typeInfo.TypeRepresentation.AsType(), WrapNonNullableType(typeInfo, graphType));
+            //StringGraphType:StringGraphType
             _typeDescriptors.AddEntity(graphType.GetType(), graphType);
             return graphType;
         }

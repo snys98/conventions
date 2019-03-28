@@ -4,18 +4,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using GraphQL.Conventions.Adapters;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
-    public class TypeResolver : ITypeResolver
+    public class TypeResolver<TSchemaType, TGraphType> : ITypeResolver
     {
-        protected readonly ObjectReflector _reflector;
+        protected readonly ObjectReflector<TSchemaType, TGraphType> _reflector;
 
         protected readonly Dictionary<Type, TypeRegistration> _typeMap = new Dictionary<Type, TypeRegistration>();
 
-        public TypeResolver()
+        public TypeResolver(IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter)
         {
-            _reflector = new ObjectReflector(this);
+            _reflector = new ObjectReflector<TSchemaType, TGraphType>(this, graphTypeAdapter);
             RegisterKnownTypes();
         }
 

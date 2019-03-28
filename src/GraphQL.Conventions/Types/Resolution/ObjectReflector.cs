@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using GraphQL.Conventions.Adapters;
 using GraphQL.Conventions.Extensions;
 using GraphQL.Conventions.Handlers;
 using GraphQL.Conventions.Types.Descriptors;
@@ -11,7 +12,7 @@ using GraphQL.Types;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
-    public class ObjectReflector
+    public class ObjectReflector<TSchemaType, TGraphType>
     {
         private const BindingFlags DefaultBindingFlags =
             BindingFlags.Public |
@@ -26,7 +27,7 @@ namespace GraphQL.Conventions.Types.Resolution
 
         private readonly ITypeResolver _typeResolver;
 
-        private readonly CachedRegistry<TypeInfo, GraphTypeInfo> _typeCache = new CachedRegistry<TypeInfo, GraphTypeInfo>();
+        private readonly CachedRegistry<TypeInfo, GraphTypeInfo> _typeCache;
 
         private readonly MetaDataAttributeHandler _metaDataHandler = new MetaDataAttributeHandler();
 
@@ -34,9 +35,10 @@ namespace GraphQL.Conventions.Types.Resolution
 
         public HashSet<string> IgnoredNamespaces { get; } = new HashSet<string>() { nameof(System) + "." };
 
-        public ObjectReflector(ITypeResolver typeResolver)
+        public ObjectReflector(ITypeResolver typeResolver, IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter)
         {
             _typeResolver = typeResolver;
+            _typeCache = new CachedRegistry<TypeInfo, GraphTypeInfo>(graphTypeAdapter.ServiceProvider);
         }
 
         public void AddExtensions(TypeInfo typeExtensions)

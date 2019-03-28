@@ -4,11 +4,17 @@ using System.Linq;
 
 namespace GraphQL.Conventions
 {
-    class CachedRegistry<TKey, TValue>
+    class CachedRegistry<TKey, TValue> where TValue : class
     {
+        private readonly IServiceProvider _serviceProvider;
         private object _lock = new object();
 
         private readonly Dictionary<TKey, TValue> _cache = new Dictionary<TKey, TValue>();
+
+        public CachedRegistry(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public TValue AddEntity(TKey key, TValue value)
         {
@@ -37,7 +43,12 @@ namespace GraphQL.Conventions
             TValue value;
             lock (_lock)
             {
-                return _cache.TryGetValue(key, out value) ? value : default(TValue);
+                if (_cache.TryGetValue(key, out value))
+                {
+                    return value;
+                }
+
+                return _serviceProvider.GetService(key as Type) as TValue;
             }
         }
 

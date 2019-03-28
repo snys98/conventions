@@ -59,7 +59,7 @@ namespace GraphQL.Conventions.Adapters
 
         public IUserContext UserContext => (FieldContext.UserContext as UserContextWrapper)?.UserContext;
 
-        public IDependencyInjector DependencyInjector => (FieldContext.UserContext as UserContextWrapper)?.DependencyInjector;
+        public IServiceProvider ServiceProvider => (FieldContext.UserContext as UserContextWrapper)?.ServiceProvider;
 
         public GraphFieldInfo FieldInfo { get; private set; }
 

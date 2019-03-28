@@ -16,21 +16,16 @@ namespace GraphQL.Conventions.Builders
 
         private readonly ITypeResolver _typeResolver;
 
-        private Func<Type, object> _typeResolutionDelegate;
-
         public SchemaConstructor(
             IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter,
             ITypeResolver typeResolver = null)
         {
             _graphTypeAdapter = graphTypeAdapter;
-            _typeResolver = typeResolver ?? new TypeResolver();
+            _typeResolver = typeResolver ?? new TypeResolver<TSchemaType, TGraphType>(graphTypeAdapter);
+            TypeResolutionDelegate = type => graphTypeAdapter.ServiceProvider.GetService(type);
         }
 
-        public Func<Type, object> TypeResolutionDelegate
-        {
-            get { return _typeResolutionDelegate ?? (type => Activator.CreateInstance(type)); }
-            set { _typeResolutionDelegate = value; }
-        }
+        public Func<Type, object> TypeResolutionDelegate { get; set; }
 
         public TSchemaType Build<TSchema>() =>
             Build(typeof(TSchema).GetTypeInfo());

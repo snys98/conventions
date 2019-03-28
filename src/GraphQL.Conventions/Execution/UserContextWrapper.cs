@@ -1,31 +1,32 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GraphQL.Conventions.Execution
 {
     public class UserContextWrapper
     {
-        public static UserContextWrapper Create(IUserContext userContext, IDependencyInjector dependencyInjector)
+        public static UserContextWrapper Create(IUserContext userContext, IServiceProvider serviceProvider)
         {
             if (userContext is IDataLoaderContextProvider)
             {
                 return new UserContextWithDataLoaderContextProvider
                 {
                     UserContext = userContext,
-                    DependencyInjector = dependencyInjector
+                    ServiceProvider = serviceProvider
                 };
             }
 
             return new UserContextWrapper
             {
                 UserContext = userContext,
-                DependencyInjector = dependencyInjector
+                ServiceProvider = serviceProvider
             };
         }
 
         public IUserContext UserContext { get; private set; }
 
-        public IDependencyInjector DependencyInjector { get; private set; }
+        public IServiceProvider ServiceProvider { get; private set; }
 
         private class UserContextWithDataLoaderContextProvider : UserContextWrapper, IDataLoaderContextProvider
         {

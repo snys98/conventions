@@ -82,7 +82,7 @@ namespace GraphQL.Conventions.Adapters
                 source.GetType() == typeof(ImplementViewerAttribute.SubscriptionViewer))
             {
                 var declaringType = fieldInfo.DeclaringType.TypeRepresentation.AsType();
-                source = context.DependencyInjector?.Resolve(declaringType.GetTypeInfo()) ?? fieldInfo.SchemaInfo.TypeResolutionDelegate(declaringType);
+                source = context.ServiceProvider?.GetService(declaringType.GetTypeInfo()) ?? fieldInfo.SchemaInfo.TypeResolutionDelegate(declaringType);
             }
             source = Unwrapper.Unwrap(source);
             return source;
