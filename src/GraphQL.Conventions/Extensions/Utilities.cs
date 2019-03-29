@@ -18,10 +18,9 @@ namespace GraphQL.Conventions.Extensions
             {
                 throw new ArgumentException("TSchemaDefinition must inherit from SchemaDefinition");
             }
-            services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
-            services.AddScoped<GraphTypeAdapter>(s => new GraphTypeAdapter(s));
-            services.AddScoped<SchemaConstructor<ISchema, IGraphType>>(s => new SchemaConstructor<ISchema, IGraphType>(s.GetService<GraphTypeAdapter>()));
-            services.AddScoped<ISchema>(s=>s.GetService<SchemaConstructor<ISchema,IGraphType>>().Build(typeof(TSchemaDefinition)));
+
+            services.AddSingleton<SchemaConstructor<ISchema, IGraphType>>();
+            services.AddScoped<ISchema>(s => s.GetService<SchemaConstructor<ISchema, IGraphType>>().Build(typeof(TSchemaDefinition)));
         }
         public static bool IsSubclassOfRawGeneric(this Type toCheck, Type generic)
         {

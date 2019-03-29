@@ -1,14 +1,14 @@
 using System;
 using GraphQL.Conventions.Types.Descriptors;
+using GraphQL.Types;
 
 namespace GraphQL.Conventions.Adapters
 {
-    public interface IGraphTypeAdapter<TSchemaType, TGraphType>
+    public interface IGraphTypeAdapter
     {
-        IServiceProvider ServiceProvider { get; }
-        TSchemaType DeriveSchema(GraphSchemaInfo schemaInfo);
+        ISchema DeriveSchema(GraphSchemaInfo schemaInfo);
 
-        TGraphType DeriveType(GraphTypeInfo typeInfo);
+        IGraphType DeriveType(GraphTypeInfo typeInfo);
 
         void RegisterScalarType<TType>(string name);
     }

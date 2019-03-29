@@ -6,34 +6,39 @@ using GraphQL.Conventions.Adapters;
 using GraphQL.Conventions.Relay;
 using GraphQL.Conventions.Types.Descriptors;
 using GraphQL.Conventions.Types.Resolution;
+using GraphQL.Types;
 
 namespace GraphQL.Conventions.Builders
 {
     public class SchemaConstructor<TSchemaType, TGraphType>
         where TSchemaType : class
     {
-        private readonly IGraphTypeAdapter<TSchemaType, TGraphType> _graphTypeAdapter;
+        private readonly IGraphTypeAdapter _graphTypeAdapter;
 
         private readonly ITypeResolver _typeResolver;
+        private Func<Type, object> _typeResolutionDelegate;
 
         public SchemaConstructor(
-            IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter,
+            IGraphTypeAdapter graphTypeAdapter = null,
             ITypeResolver typeResolver = null)
         {
-            _graphTypeAdapter = graphTypeAdapter;
-            _typeResolver = typeResolver ?? new TypeResolver<TSchemaType, TGraphType>(graphTypeAdapter);
-            TypeResolutionDelegate = type => graphTypeAdapter.ServiceProvider.GetService(type);
+            _graphTypeAdapter = graphTypeAdapter ?? new GraphTypeAdapter();
+            _typeResolver = typeResolver ?? new TypeResolver(graphTypeAdapter);
         }
 
-        public Func<Type, object> TypeResolutionDelegate { get; set; }
+        public Func<Type, object> TypeResolutionDelegate
+        {
+            get => _typeResolutionDelegate??(type => Activator.CreateInstance(type));
+            set => _typeResolutionDelegate = value;
+        }
 
-        public TSchemaType Build<TSchema>() =>
+        public ISchema Build<TSchema>() =>
             Build(typeof(TSchema).GetTypeInfo());
 
-        public TSchemaType Build(params Type[] schemaTypes) =>
+        public ISchema Build(params Type[] schemaTypes) =>
             Build(schemaTypes?.Select(type => type?.GetTypeInfo()).ToArray());
 
-        public TSchemaType Build(params TypeInfo[] schemaTypes)
+        public ISchema Build(params TypeInfo[] schemaTypes)
         {
             var schemaInfos = schemaTypes?
                 .Select(_typeResolver.DeriveSchema)

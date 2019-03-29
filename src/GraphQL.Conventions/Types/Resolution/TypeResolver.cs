@@ -8,15 +8,15 @@ using GraphQL.Conventions.Adapters;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
-    public class TypeResolver<TSchemaType, TGraphType> : ITypeResolver
+    public class TypeResolver : ITypeResolver
     {
-        protected readonly ObjectReflector<TSchemaType, TGraphType> _reflector;
+        protected readonly ObjectReflector _reflector;
 
         protected readonly Dictionary<Type, TypeRegistration> _typeMap = new Dictionary<Type, TypeRegistration>();
 
-        public TypeResolver(IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter)
+        public TypeResolver(IGraphTypeAdapter graphTypeAdapter)
         {
-            _reflector = new ObjectReflector<TSchemaType, TGraphType>(this, graphTypeAdapter);
+            _reflector = new ObjectReflector(this, graphTypeAdapter);
             RegisterKnownTypes();
         }
 

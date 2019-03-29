@@ -12,7 +12,7 @@ using GraphQL.Types;
 
 namespace GraphQL.Conventions.Types.Resolution
 {
-    public class ObjectReflector<TSchemaType, TGraphType>
+    public class ObjectReflector
     {
         private const BindingFlags DefaultBindingFlags =
             BindingFlags.Public |
@@ -35,10 +35,10 @@ namespace GraphQL.Conventions.Types.Resolution
 
         public HashSet<string> IgnoredNamespaces { get; } = new HashSet<string>() { nameof(System) + "." };
 
-        public ObjectReflector(ITypeResolver typeResolver, IGraphTypeAdapter<TSchemaType, TGraphType> graphTypeAdapter)
+        public ObjectReflector(ITypeResolver typeResolver, IGraphTypeAdapter graphTypeAdapter)
         {
             _typeResolver = typeResolver;
-            _typeCache = new CachedRegistry<TypeInfo, GraphTypeInfo>(graphTypeAdapter.ServiceProvider);
+            _typeCache = new CachedRegistry<TypeInfo, GraphTypeInfo>();
         }
 
         public void AddExtensions(TypeInfo typeExtensions)

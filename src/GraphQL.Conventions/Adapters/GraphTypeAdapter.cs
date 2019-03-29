@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GraphQL.Conventions.Adapters
 {
-    public class GraphTypeAdapter : IGraphTypeAdapter<ISchema, IGraphType>
+    public class GraphTypeAdapter : IGraphTypeAdapter
     {
         public IServiceProvider ServiceProvider { get; }
         readonly CachedRegistry<Type, IGraphType> _typeDescriptors;
